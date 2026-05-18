@@ -1,0 +1,13 @@
+{
+  "name": "fitcheck",
+  "version": "1.0.0",
+  "description": "AI Outfit Try-On & Style Recommendation Platform",
+  "scripts": {
+    "start:frontend": "npm run dev --prefix frontend",
+    "start:backend": "npm run dev --prefix backend",
+    "install:all": "npm install --prefix frontend && npm install --prefix backend"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
