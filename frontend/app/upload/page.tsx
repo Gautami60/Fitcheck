@@ -91,16 +91,16 @@ export default function UploadPage() {
       });
 
       // Save result to session storage
-      sessionStorage.setItem('reportResult', JSON.stringify(tryonRes.data));
+      sessionStorage.setItem('tryonResult', JSON.stringify(tryonRes.data));
       
-      router.push('/report');
+      router.push('/try-on');
       
     } catch (err: any) {
       console.error(err);
       // Premium Error Handling (No red banners)
       setError({
         title: 'Service Temporarily Unavailable',
-        desc: err.response?.data?.message || 'The Analysis Service is currently unavailable. Please try again in a few moments.'
+        desc: 'Preview temporarily unavailable. Please retry. ' + (err.response?.data?.message || '')
       });
       setIsUploading(false);
     }
@@ -127,10 +127,10 @@ export default function UploadPage() {
           className="mb-12 text-center"
         >
           <h1 className="text-4xl font-light tracking-tight mb-4">
-            Analyze <span className="font-bold">Outfit</span>
+            Upload <span className="font-bold">Assets</span>
           </h1>
           <p className="text-zinc-400 font-light max-w-xl mx-auto">
-            Provide a clear, full-body photograph and an image of the target outfit for style intelligence and fashion compatibility analysis.
+            Provide a clear, full-body photograph and an image of the target outfit to generate your AI Style Preview.
           </p>
           
           {error && (
@@ -232,7 +232,7 @@ export default function UploadPage() {
               </>
             ) : (
               <>
-                Analyze Outfit
+                Generate Style Preview
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </>
             )}

@@ -12,6 +12,8 @@ const outfitAnalysisSchema = new mongoose.Schema({
   },
   analysis: {
     suitabilityScore: Number,
+    whatWorks: [String],
+    whatToAvoid: [String],
     styleMatch: [{
       style: String,
       percentage: Number
@@ -23,11 +25,15 @@ const outfitAnalysisSchema = new mongoose.Schema({
     },
     fitRecommendations: {
       best: String,
-      moderate: String,
       avoid: String
     },
     occasionMatch: [String],
-    stylingSuggestions: String
+    stylingSuggestions: {
+      accessories: String,
+      shoes: String,
+      layering: String,
+      watch: String
+    }
   }
 }, { timestamps: true });
 

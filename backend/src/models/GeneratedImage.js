@@ -16,7 +16,7 @@ const generatedImageSchema = new mongoose.Schema({
   },
   generatedImageUrl: {
     type: String,
-    required: false // No longer required, we use conceptual previews
+    required: true
   },
   outfitAnalysisId: {
     type: mongoose.Schema.Types.ObjectId,

@@ -63,7 +63,7 @@ export default function Home() {
           transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
           className="text-xl md:text-2xl text-zinc-400 mb-12 max-w-2xl font-light"
         >
-          AI-powered fashion compatibility and personal style intelligence. Experience styling in a completely new dimension.
+          AI-powered aesthetic previews and personal style intelligence. Experience fashion in a completely new dimension.
         </motion.p>
 
         <motion.div 
@@ -73,7 +73,7 @@ export default function Home() {
           className="flex flex-col sm:flex-row gap-6"
         >
           <Link href="/signup" className="group relative px-8 py-4 bg-white text-black rounded-full font-medium text-lg overflow-hidden flex items-center gap-2">
-            <span className="relative z-10 flex items-center gap-2">Analyze Outfit <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" /></span>
+            <span className="relative z-10 flex items-center gap-2">Start Style Preview <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" /></span>
             <div className="absolute inset-0 bg-gradient-to-r from-zinc-200 to-zinc-100 transform scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-500 ease-out" />
           </Link>
           <button className="px-8 py-4 rounded-full glass-panel text-white font-medium text-lg hover:bg-white/10 transition-colors">

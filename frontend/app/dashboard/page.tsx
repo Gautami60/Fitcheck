@@ -51,9 +51,9 @@ export default function Dashboard() {
                 <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center mb-6">
                   <Sparkles className="w-6 h-6 text-violet-400" />
                 </div>
-                <h2 className="text-2xl font-bold mb-3">Analyze Outfit</h2>
+                <h2 className="text-2xl font-bold mb-3">Initiate Style Preview</h2>
                 <p className="text-zinc-400 font-light max-w-md">
-                  Upload your photo and a target outfit. Our intelligence engine will generate a conceptual style preview and a comprehensive fashion compatibility report.
+                  Upload your photo and a target outfit. Our intelligence engine will generate a conceptual preview and comprehensive style analysis.
                 </p>
               </div>
               <Link href="/upload" className="mt-12 inline-flex items-center gap-3 px-8 py-4 bg-white text-black rounded-full font-medium hover:bg-zinc-200 transition-colors w-max group/btn">
@@ -102,7 +102,7 @@ export default function Dashboard() {
                 <ArrowRight className="w-4 h-4 text-zinc-600 group-hover:text-white transition-colors" />
               </div>
               <h3 className="font-bold text-lg mb-1">Archive</h3>
-              <p className="text-zinc-400 text-sm font-light">Review past intelligence reports and style analytics.</p>
+              <p className="text-zinc-400 text-sm font-light">Review past analyses and style previews.</p>
             </motion.div>
           </div>
         </div>

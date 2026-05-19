@@ -56,20 +56,38 @@ const analyzeStyle = async (userImageUrl, outfitImageUrl, userId) => {
 
         const fits = ["Tailored fit", "Regular fit", "Relaxed fit", "Slim fit"];
         const avoids = ["Extreme oversized fits", "Skin-tight fits", "Boxy cuts"];
+        
+        const worksList = [
+            ["structured fits", "dark monochrome", "tailored silhouettes", "elevated basics"],
+            ["relaxed draping", "neutral palettes", "flowy lines", "breathable fabrics"],
+            ["sharp tailoring", "bold accents", "high contrast", "statement pieces"]
+        ];
+        
+        const avoidsList = [
+            ["overly oversized cuts", "washed-out colors", "sharp shoulder-heavy fits"],
+            ["tight restrictive fabrics", "clashing neon patterns", "excessive layering"],
+            ["baggy silhouettes", "distressed details", "heavy synthetic blends"]
+        ];
 
         const analysis = {
             suitabilityScore: deterministicScore,
+            whatWorks: worksList[combinedHash % worksList.length],
+            whatToAvoid: avoidsList[combinedHash % avoidsList.length],
             styleMatch: styleMatch,
-            bodyCompatibility: "The structured tailoring complements the detected proportions effectively. The visual balance suggests strong synergy with the selected silhouette.",
+            bodyCompatibility: "The structured silhouette complements your proportions while maintaining balance. Slight tapering may further improve visual harmony.",
             colorCompatibility: colorMatch,
             fitRecommendations: {
                 best: fits[combinedHash % fits.length],
-                moderate: fits[(combinedHash + 1) % fits.length],
                 avoid: avoids[combinedHash % avoids.length]
             },
-            occasionMatch: ["formal dinners", "networking", "evening events", "creative workspace", "weekend casual"]
+            occasionMatch: ["formal dinners", "networking", "evening events", "casual luxury", "weekend casual"]
                 .slice(combinedHash % 2, (combinedHash % 2) + 3),
-            stylingSuggestions: "Minimal metallic accessories and sleek footwear may elevate this specific aesthetic."
+            stylingSuggestions: {
+                accessories: "Minimal silver jewelry or sleek geometric shapes",
+                shoes: "Leather loafers or clean minimal sneakers",
+                layering: "Light tailored blazer or structured overshirt",
+                watch: "Classic dress watch or minimal smartwatch"
+            }
         };
 
         return analysis;

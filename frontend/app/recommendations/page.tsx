@@ -40,9 +40,9 @@ export default function Recommendations() {
       <div className="max-w-4xl mx-auto relative z-10">
         
         <header className="mb-16">
-          <Link href="/report" className="inline-flex items-center gap-2 text-sm text-zinc-400 hover:text-white transition-colors uppercase tracking-widest font-medium mb-8">
+          <Link href="/try-on" className="inline-flex items-center gap-2 text-sm text-zinc-400 hover:text-white transition-colors uppercase tracking-widest font-medium mb-8">
             <ArrowLeft className="w-4 h-4" />
-            Back to Analysis
+            Back to Try-On
           </Link>
           <motion.h1 
             initial={{ opacity: 0, y: 20 }}
@@ -57,7 +57,7 @@ export default function Recommendations() {
             transition={{ delay: 0.1 }}
             className="text-zinc-400 font-light text-lg"
           >
-            AI-driven suggestions to elevate your aesthetic based on your recent style analysis.
+            AI-driven suggestions to elevate your aesthetic based on your recent try-on.
           </motion.p>
         </header>
 
