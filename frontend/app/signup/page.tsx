@@ -6,19 +6,18 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { motion } from 'framer-motion';
-import { ArrowRight, Loader2 } from 'lucide-react';
+import { ArrowRight, Loader2, AlertCircle } from 'lucide-react';
 import api from '../../services/api';
 
 const signupSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
-  email: z.string().email("Invalid email address"),
+  email: z.string().email("Please enter a valid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
 type SignupFormValues = z.infer<typeof signupSchema>;
 
-export default function Signup() {
+export default function SignupPage() {
   const router = useRouter();
   const [serverError, setServerError] = useState<string | null>(null);
 
@@ -34,107 +33,159 @@ export default function Signup() {
     setServerError(null);
     try {
       const response = await api.post('/auth/signup', data);
-      
+
       if (response.data.token) {
         localStorage.setItem('token', response.data.token);
-        localStorage.setItem('user', JSON.stringify({ 
-          id: response.data._id, 
-          name: response.data.name, 
-          email: response.data.email 
-        }));
+        localStorage.setItem(
+          'user',
+          JSON.stringify({
+            id: response.data._id,
+            name: response.data.name,
+            email: response.data.email,
+          })
+        );
         router.push('/dashboard');
       }
     } catch (error: any) {
-      setServerError(error.response?.data?.message || 'Registration failed. Please try again.');
+      setServerError(error.response?.data?.message || 'Registration failed. Please verify information.');
     }
   };
 
   return (
-    <main className="min-h-screen bg-[#070707] flex flex-col justify-center items-center p-6 relative overflow-hidden">
-      {/* Cinematic Ambient Background */}
-      <div className="absolute inset-0 z-0 pointer-events-none">
-        <div className="absolute top-1/4 right-1/4 w-[500px] h-[500px] bg-indigo-600/20 rounded-full blur-[150px] mix-blend-screen" />
-        <div className="absolute bottom-1/4 left-1/4 w-[600px] h-[600px] bg-violet-600/10 rounded-full blur-[150px] mix-blend-screen" />
+    <main className="min-h-screen bg-white text-[#151413] flex flex-col justify-between p-6 sm:p-12 font-sans selection:bg-[#0E0E0E] selection:text-white">
+      
+      {/* Top Header */}
+      <div className="max-w-md w-full mx-auto flex items-center justify-between">
+        <Link
+          href="/"
+          className="text-lg font-light tracking-[0.25em] text-[#151413] uppercase hover:opacity-80 transition-opacity"
+        >
+          F I T C H E C K
+        </Link>
+        <span className="text-[10px] uppercase tracking-widest text-[#66625C] font-mono">
+          CLIENT REGISTRATION
+        </span>
       </div>
 
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        className="w-full max-w-md relative z-10"
-      >
-        <Link href="/" className="inline-block text-2xl font-bold tracking-tighter mb-12 text-white hover:opacity-80 transition-opacity">
-          FITCHECK<span className="text-violet-500">.</span>
-        </Link>
-
-        <div className="glass-panel p-10 rounded-[2rem] shadow-2xl relative overflow-hidden group">
-          <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
-          
-          <h1 className="text-3xl font-light tracking-tight mb-2 text-white">Request Access</h1>
-          <p className="text-zinc-400 mb-8 text-sm">Create an account to experience AI style intelligence.</p>
-          
-          {serverError && (
-            <motion.div 
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              className="mb-6 p-4 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl text-sm backdrop-blur-md"
-            >
-              {serverError}
-            </motion.div>
-          )}
-
-          <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5 relative z-10">
-            <div>
-              <input 
-                type="text" 
-                placeholder="Full Name" 
-                className={`w-full p-4 bg-white/5 border ${errors.name ? 'border-red-500/50 focus:border-red-500' : 'border-white/10 focus:border-violet-500/50'} rounded-xl text-white placeholder:text-zinc-500 outline-none focus:bg-white/10 transition-all duration-300 focus:glow-effect`}
-                {...register('name')} 
-              />
-              {errors.name && <p className="text-red-400 text-xs mt-2 ml-2">{errors.name.message}</p>}
-            </div>
-
-            <div>
-              <input 
-                type="email" 
-                placeholder="Email Address" 
-                className={`w-full p-4 bg-white/5 border ${errors.email ? 'border-red-500/50 focus:border-red-500' : 'border-white/10 focus:border-violet-500/50'} rounded-xl text-white placeholder:text-zinc-500 outline-none focus:bg-white/10 transition-all duration-300 focus:glow-effect`}
-                {...register('email')} 
-              />
-              {errors.email && <p className="text-red-400 text-xs mt-2 ml-2">{errors.email.message}</p>}
-            </div>
-
-            <div>
-              <input 
-                type="password" 
-                placeholder="Password" 
-                className={`w-full p-4 bg-white/5 border ${errors.password ? 'border-red-500/50 focus:border-red-500' : 'border-white/10 focus:border-violet-500/50'} rounded-xl text-white placeholder:text-zinc-500 outline-none focus:bg-white/10 transition-all duration-300 focus:glow-effect`}
-                {...register('password')} 
-              />
-              {errors.password && <p className="text-red-400 text-xs mt-2 ml-2">{errors.password.message}</p>}
-            </div>
-
-            <button 
-              type="submit" 
-              disabled={isSubmitting}
-              className="w-full mt-4 p-4 bg-white text-black rounded-xl font-medium hover:bg-zinc-200 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2 group/btn"
-            >
-              {isSubmitting ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
-              ) : (
-                <>
-                  Create Account
-                  <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
-                </>
-              )}
-            </button>
-          </form>
-        </div>
+      {/* Main Authentication Card */}
+      <div className="max-w-md w-full mx-auto my-12 border border-[#C8C8C8] p-8 sm:p-12 bg-white space-y-8">
         
-        <p className="mt-8 text-center text-zinc-500 text-sm">
-          Already have an account? <Link href="/login" className="text-white hover:text-violet-400 transition-colors">Sign In</Link>
-        </p>
-      </motion.div>
+        <div>
+          <span className="editorial-subheading text-[#66625C] block mb-2">
+            Join Fitcheck
+          </span>
+          <h1 className="text-3xl font-light tracking-tight text-[#151413]">
+            Request Client Access
+          </h1>
+          <p className="text-xs text-[#66625C] font-light mt-2 leading-relaxed">
+            Create an account to calibrate your personal style archetype and curate your runway archive.
+          </p>
+        </div>
+
+        {/* Server Error Message */}
+        {serverError && (
+          <div className="p-4 bg-[#FFF8F8] border border-[#F0D0D0] text-xs text-[#8A2525] flex items-start gap-2.5">
+            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+            <div>
+              <span className="font-semibold uppercase tracking-wider block mb-0.5">
+                Registration Error
+              </span>
+              <p className="font-light">{serverError}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Form */}
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          <div className="space-y-1.5">
+            <label className="text-[11px] font-semibold uppercase tracking-wider text-[#151413] block">
+              Full Name
+            </label>
+            <input
+              type="text"
+              placeholder="Julian Laurent"
+              className={`w-full p-4 bg-white border text-xs text-[#151413] outline-none transition-colors ${
+                errors.name ? 'border-red-500' : 'border-[#C8C8C8] focus:border-[#151413]'
+              }`}
+              {...register('name')}
+            />
+            {errors.name && (
+              <p className="text-red-600 text-[11px] mt-1">{errors.name.message}</p>
+            )}
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-[11px] font-semibold uppercase tracking-wider text-[#151413] block">
+              Email Address
+            </label>
+            <input
+              type="email"
+              placeholder="client@fitcheck.com"
+              className={`w-full p-4 bg-white border text-xs text-[#151413] outline-none transition-colors ${
+                errors.email ? 'border-red-500' : 'border-[#C8C8C8] focus:border-[#151413]'
+              }`}
+              {...register('email')}
+            />
+            {errors.email && (
+              <p className="text-red-600 text-[11px] mt-1">{errors.email.message}</p>
+            )}
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-[11px] font-semibold uppercase tracking-wider text-[#151413] block">
+              Password (Min 6 Characters)
+            </label>
+            <input
+              type="password"
+              placeholder="••••••••••••"
+              className={`w-full p-4 bg-white border text-xs text-[#151413] outline-none transition-colors ${
+                errors.password ? 'border-red-500' : 'border-[#C8C8C8] focus:border-[#151413]'
+              }`}
+              {...register('password')}
+            />
+            {errors.password && (
+              <p className="text-red-600 text-[11px] mt-1">{errors.password.message}</p>
+            )}
+          </div>
+
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full py-4.5 bg-[#0E0E0E] text-white text-xs uppercase tracking-widest font-semibold hover:bg-[#2A2927] transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-sm"
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Creating Account...</span>
+              </>
+            ) : (
+              <>
+                <span>Create Account</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </>
+            )}
+          </button>
+        </form>
+
+        <div className="pt-6 border-t border-[#DFDFDF] text-center">
+          <p className="text-xs text-[#66625C] font-light">
+            Already have an account?{' '}
+            <Link
+              href="/login"
+              className="text-[#151413] font-medium underline underline-offset-4 hover:opacity-80"
+            >
+              Sign In
+            </Link>
+          </p>
+        </div>
+
+      </div>
+
+      {/* Footer Info */}
+      <div className="max-w-md w-full mx-auto text-center text-[10px] text-[#66625C] uppercase tracking-wider">
+        Fitcheck Style Intelligence &bull; Secure Protocol
+      </div>
+
     </main>
   );
 }

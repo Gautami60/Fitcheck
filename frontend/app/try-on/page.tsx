@@ -1,231 +1,357 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
-import Link from 'next/link';
-import { Sparkles, ArrowLeft, Download, CheckCircle2, XCircle, Palette, Activity, Layers, Hexagon, Zap } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import {
+  ArrowLeft,
+  ArrowRight,
+  Bookmark,
+  Check,
+  Layers,
+} from 'lucide-react';
+import SiteHeader from '../../components/layout/SiteHeader';
+import SiteFooter from '../../components/layout/SiteFooter';
+import CompatibilityScore from '../../components/style/CompatibilityScore';
+import ColorPalette from '../../components/style/ColorPalette';
+import StyleInsightCard from '../../components/style/StyleInsightCard';
+import { isLookSaved, saveLook } from '../../utils/savedLooks';
 
-export default function TryOnResult() {
+export default function TryOnResultPage() {
   const router = useRouter();
   const [result, setResult] = useState<any>(null);
-  
+  const [isSaved, setIsSaved] = useState(false);
+
   useEffect(() => {
-    const data = sessionStorage.getItem('tryonResult');
-    if (data) {
-      setResult(JSON.parse(data));
+    const raw = sessionStorage.getItem('tryonResult');
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw);
+        setResult(parsed);
+        if (parsed.analysisId) {
+          setIsSaved(isLookSaved(parsed.analysisId));
+        }
+      } catch (e) {
+        console.error('Failed to parse tryon result', e);
+        router.push('/upload');
+      }
     } else {
       router.push('/upload');
     }
   }, [router]);
 
-  if (!result) return <div className="min-h-screen bg-[#050505] flex items-center justify-center text-white font-light tracking-widest text-sm uppercase">Loading Style Preview...</div>;
+  if (!result) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center text-xs uppercase tracking-widest text-[#66625C]">
+        Loading Fashion Intelligence Report...
+      </div>
+    );
+  }
 
   const analysis = result.analysis || {};
-  const styleMatch = analysis.styleMatch || [];
-  const recommendedColors = analysis.colorCompatibility?.recommended || [];
-  const avoidColors = analysis.colorCompatibility?.avoid || [];
-  const whatWorks = analysis.whatWorks || [];
-  const whatToAvoid = analysis.whatToAvoid || [];
+  const styleMatches: Array<{ style: string; percentage: number }> = analysis.styleMatch || [];
+  const recommendedColors: string[] = analysis.colorCompatibility?.recommended || [];
+  const avoidColors: string[] = analysis.colorCompatibility?.avoid || [];
+  const whatWorks: string[] = analysis.whatWorks || [];
+  const whatToAvoid: string[] = analysis.whatToAvoid || [];
+  const occasions: string[] = analysis.occasionMatch || [];
+  const styling = analysis.stylingSuggestions || {};
+
+  const handleSaveToCollection = () => {
+    const id = result.analysisId || `analysis-${Date.now()}`;
+    saveLook({
+      id,
+      name: `Style Evaluation &bull; ${styleMatches[0]?.style || 'Custom Analysis'}`,
+      image: result.outfitImageUrl,
+      category: styleMatches[0]?.style || 'Tailored',
+      type: 'analysis',
+      score: analysis.suitabilityScore || 85,
+    });
+    setIsSaved(true);
+  };
 
   return (
-    <main className="min-h-screen bg-[#050505] text-[#ededed] p-6 md:p-12 font-sans selection:bg-violet-500/30 overflow-x-hidden">
-      
-      <header className="mb-12 flex items-center justify-between max-w-[1400px] mx-auto">
-        <Link href="/upload" className="flex items-center gap-2 text-xs text-zinc-500 hover:text-white transition-colors uppercase tracking-widest font-medium">
-          <ArrowLeft className="w-4 h-4" />
-          New Analysis
-        </Link>
-        <div className="text-[10px] text-violet-400 uppercase tracking-widest flex items-center gap-2 font-bold border border-violet-500/20 bg-violet-500/10 px-3 py-1.5 rounded-full">
-          <span className="w-1.5 h-1.5 rounded-full bg-violet-400 animate-pulse" />
-          Generation & Analysis Complete
-        </div>
-      </header>
+    <div className="min-h-screen bg-white text-[#151413] flex flex-col font-sans">
+      <SiteHeader />
 
-      <div className="max-w-[1400px] mx-auto space-y-16">
-        
-        {/* HERO SECTION: IMAGES */}
-        <section>
-          <div className="text-center mb-10">
-            <h1 className="text-4xl md:text-5xl font-light tracking-tight mb-3">AI Style <span className="font-bold text-white">Preview</span></h1>
-            <p className="text-zinc-400 font-light text-sm max-w-xl mx-auto leading-relaxed">Conceptual visualization of your selected garment and aesthetic compatibility.</p>
+      <main className="flex-1 py-12 md:py-20">
+        <div className="max-w-[1400px] mx-auto px-6 lg:px-12 space-y-16">
+          
+          {/* Top Navigation & Status Bar */}
+          <div className="border-b border-[#C8C8C8] pb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <Link
+              href="/upload"
+              className="inline-flex items-center gap-2 text-xs uppercase tracking-widest text-[#66625C] hover:text-[#151413] transition-colors font-medium"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>New Analysis</span>
+            </Link>
+
+            <div className="flex items-center gap-4">
+              <span className="text-[11px] uppercase tracking-widest text-[#66625C] font-mono">
+                REPORT ID: {result.analysisId ? String(result.analysisId).slice(-8).toUpperCase() : 'FIT-2026'}
+              </span>
+              <div className="h-3 w-[1px] bg-[#C8C8C8]" />
+              <button
+                onClick={handleSaveToCollection}
+                className={`flex items-center gap-2 px-3.5 py-1.5 border text-xs uppercase tracking-wider font-medium transition-colors ${
+                  isSaved
+                    ? 'border-[#0E0E0E] bg-[#F7F7F6] text-[#0E0E0E]'
+                    : 'border-[#C8C8C8] text-[#151413] hover:border-[#151413]'
+                }`}
+              >
+                {isSaved ? (
+                  <>
+                    <Check className="w-3.5 h-3.5" />
+                    <span>Saved In Collection</span>
+                  </>
+                ) : (
+                  <>
+                    <Bookmark className="w-3.5 h-3.5" />
+                    <span>Save Report</span>
+                  </>
+                )}
+              </button>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-10 max-w-4xl mx-auto items-stretch">
-            {/* Original Image */}
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }} className="flex flex-col gap-4">
-              <div className="flex items-center justify-between px-2">
-                <span className="text-xs uppercase tracking-widest text-zinc-500 font-bold">Step 1</span>
-                <span className="text-xs uppercase tracking-widest text-zinc-400">Original</span>
+          {/* SECTION 01: SUBJECT & OUTFIT VISUALIZATION */}
+          <section className="space-y-6">
+            <div className="border-b border-[#DFDFDF] pb-4 flex flex-col md:flex-row md:items-end justify-between gap-4">
+              <div>
+                <span className="editorial-subheading text-[#66625C] block mb-1">
+                  Visual Comparison
+                </span>
+                <h1 className="text-3xl md:text-5xl font-light tracking-tight text-[#151413]">
+                  Style Compatibility Report
+                </h1>
               </div>
-              <div className="relative rounded-3xl overflow-hidden bg-zinc-900/40 border border-white/5 p-3 backdrop-blur-3xl h-full flex flex-col">
-                <div className="aspect-[3/4] relative rounded-2xl overflow-hidden bg-zinc-900 w-full flex-grow">
-                  {result.originalUserImageUrl ? <img src={result.originalUserImageUrl} className="w-full h-full object-cover" alt="Original Upload" /> : <div className="w-full h-full flex items-center justify-center text-zinc-600 text-xs">Original</div>}
-                </div>
-              </div>
-            </motion.div>
+              <p className="text-xs text-[#66625C] font-light max-w-sm">
+                Objective evaluation of garment architecture versus physical silhouette proportions.
+              </p>
+            </div>
 
-            {/* Outfit Image */}
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.1 }} className="flex flex-col gap-4">
-              <div className="flex items-center justify-between px-2">
-                <span className="text-xs uppercase tracking-widest text-zinc-500 font-bold">Step 2</span>
-                <span className="text-xs uppercase tracking-widest text-zinc-400">Garment</span>
-              </div>
-              <div className="relative rounded-3xl overflow-hidden bg-zinc-900/40 border border-white/5 p-3 backdrop-blur-3xl h-full flex flex-col">
-                <div className="aspect-[3/4] relative rounded-2xl overflow-hidden bg-zinc-900 w-full flex-grow">
-                  {result.outfitImageUrl ? <img src={result.outfitImageUrl} className="w-full h-full object-cover" alt="Target Outfit" /> : <div className="w-full h-full flex items-center justify-center text-zinc-600 text-xs">Garment</div>}
-                </div>
-              </div>
-            </motion.div>
-
-          </div>
-        </section>
-
-        {/* FASHION INTELLIGENCE SECTION */}
-        <section className="pt-8 border-t border-white/5">
-          <div className="mb-10 text-center">
-            <h2 className="text-3xl md:text-4xl font-light tracking-tight mb-2">Fashion <span className="font-bold bg-clip-text text-transparent bg-gradient-to-r from-violet-400 to-white">Intelligence</span></h2>
-            <p className="text-zinc-400 font-light text-sm max-w-2xl mx-auto leading-relaxed">Comprehensive algorithmic breakdown of silhouette synergy, color harmony, and style compatibility.</p>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            
-            {/* Suitability & Style Match (Left Column 4/12) */}
-            <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8 }} className="lg:col-span-4 flex flex-col gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
               
-              {/* Suitability Score */}
-              <div className="bg-zinc-900/30 border border-white/5 p-8 rounded-3xl relative overflow-hidden group">
-                <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-500/5 rounded-full blur-[50px] group-hover:bg-emerald-500/10 transition-colors duration-700" />
-                <div className="flex items-center gap-2 text-zinc-500 text-xs mb-6 uppercase tracking-widest font-bold">
-                  <Zap className="w-4 h-4 text-emerald-400" /> Suitability Score
+              {/* Card 1: Original User Photograph */}
+              <div className="border border-[#C8C8C8] p-4 bg-white flex flex-col">
+                <div className="flex items-center justify-between mb-3 px-1">
+                  <span className="text-[10px] uppercase tracking-widest text-[#66625C] font-semibold">
+                    Input 01 &bull; Personal Image
+                  </span>
+                  <span className="text-[10px] uppercase tracking-wider text-[#151413] font-medium">
+                    Subject Base
+                  </span>
                 </div>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-7xl font-light tracking-tighter text-white">{analysis.suitabilityScore || 0}</span>
-                  <span className="text-lg text-zinc-600 font-bold tracking-widest uppercase">/ 100</span>
-                </div>
-              </div>
-
-              {/* Style Match */}
-              <div className="bg-zinc-900/30 border border-white/5 p-8 rounded-3xl relative overflow-hidden">
-                <div className="flex items-center gap-2 text-zinc-500 text-xs mb-6 uppercase tracking-widest font-bold">
-                  <Hexagon className="w-4 h-4 text-violet-400" /> Primary Style Match
-                </div>
-                <div className="space-y-5">
-                  {styleMatch.map((s: any, idx: number) => (
-                    <div key={idx} className="flex justify-between items-center border-b border-white/5 pb-4 last:border-0 last:pb-0">
-                      <span className="text-lg text-white font-medium">{s.style}</span>
-                      <span className={`text-sm font-bold tracking-widest ${idx === 0 ? 'text-violet-400' : 'text-zinc-500'}`}>{s.percentage}%</span>
-                    </div>
-                  ))}
+                <div className="aspect-[3/4] bg-[#F7F7F6] border border-[#DFDFDF] overflow-hidden flex items-center justify-center">
+                  {result.originalUserImageUrl ? (
+                    <img
+                      src={result.originalUserImageUrl}
+                      alt="Subject Base Photograph"
+                      className="w-full h-full object-cover object-top"
+                    />
+                  ) : (
+                    <span className="text-xs text-[#66625C] uppercase">Image Unavailable</span>
+                  )}
                 </div>
               </div>
 
-            </motion.div>
+              {/* Card 2: Selected Target Garment */}
+              <div className="border border-[#C8C8C8] p-4 bg-white flex flex-col">
+                <div className="flex items-center justify-between mb-3 px-1">
+                  <span className="text-[10px] uppercase tracking-widest text-[#66625C] font-semibold">
+                    Input 02 &bull; Target Garment
+                  </span>
+                  <span className="text-[10px] uppercase tracking-wider text-[#151413] font-medium">
+                    Outfit Architecture
+                  </span>
+                </div>
+                <div className="aspect-[3/4] bg-[#F7F7F6] border border-[#DFDFDF] overflow-hidden flex items-center justify-center">
+                  {result.outfitImageUrl ? (
+                    <img
+                      src={result.outfitImageUrl}
+                      alt="Target Garment"
+                      className="w-full h-full object-cover object-top"
+                    />
+                  ) : (
+                    <span className="text-xs text-[#66625C] uppercase">Image Unavailable</span>
+                  )}
+                </div>
+              </div>
 
-            {/* Detailed Analysis (Right Column 8/12) */}
-            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8, delay: 0.2 }} className="lg:col-span-8 flex flex-col gap-6">
+            </div>
+          </section>
+
+          {/* SECTION 02: STYLE INTELLIGENCE METRICS */}
+          <section className="space-y-8 pt-8 border-t border-[#C8C8C8]">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+              <div>
+                <span className="editorial-subheading text-[#66625C] block mb-1">
+                  Algorithmic Breakdown
+                </span>
+                <h2 className="text-2xl md:text-3xl font-light tracking-tight text-[#151413]">
+                  Fashion Intelligence Matrices
+                </h2>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
               
-              {/* Works vs Avoid */}
-              <div className="bg-zinc-900/30 border border-white/5 p-8 rounded-3xl">
-                <div className="flex items-center gap-3 mb-8">
-                  <div className="p-2 bg-white/5 rounded-lg border border-white/5"><Activity className="w-5 h-5 text-zinc-300" /></div>
-                  <h3 className="text-sm font-bold uppercase tracking-[0.2em] text-zinc-300">Silhouette & Fit Analysis</h3>
-                </div>
-                
-                <div className="mb-8">
-                  <p className="text-zinc-400 text-sm leading-relaxed">{analysis.bodyCompatibility}</p>
+              {/* Left Column (5/12): Suitability Score & Primary Style Matches */}
+              <div className="lg:col-span-5 space-y-8">
+                {/* Score */}
+                <CompatibilityScore score={analysis.suitabilityScore || 88} />
+
+                {/* Primary Style Match */}
+                <div className="border border-[#C8C8C8] p-8 bg-white space-y-6">
+                  <div className="flex items-center justify-between border-b border-[#DFDFDF] pb-4">
+                    <span className="editorial-subheading text-[#151413]">
+                      Aesthetic Classification
+                    </span>
+                    <span className="text-[10px] uppercase tracking-wider text-[#66625C]">
+                      Synergy Ratio
+                    </span>
+                  </div>
+
+                  <div className="space-y-4">
+                    {styleMatches.map((item, idx) => (
+                      <div key={idx} className="space-y-1.5">
+                        <div className="flex justify-between items-center text-xs">
+                          <span className="font-normal text-[#151413]">{item.style}</span>
+                          <span className="font-mono text-[#0E0E0E] font-medium">
+                            {item.percentage}%
+                          </span>
+                        </div>
+                        <div className="w-full h-1 bg-[#DFDFDF]">
+                          <div
+                            className={`h-full ${idx === 0 ? 'bg-[#0E0E0E]' : 'bg-[#66625C]'}`}
+                            style={{ width: `${Math.min(item.percentage, 100)}%` }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div className="bg-emerald-500/5 border border-emerald-500/10 p-5 rounded-2xl">
-                    <h4 className="text-xs text-emerald-400 uppercase tracking-widest mb-4 font-bold flex items-center gap-2"><CheckCircle2 className="w-4 h-4" /> What Works</h4>
-                    <ul className="space-y-3">
-                      {whatWorks.map((item: string, i: number) => (
-                        <li key={i} className="text-sm text-zinc-300 flex items-start gap-2 capitalize">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500/50 mt-1.5 shrink-0" /> {item}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                  <div className="bg-red-500/5 border border-red-500/10 p-5 rounded-2xl">
-                    <h4 className="text-xs text-red-400 uppercase tracking-widest mb-4 font-bold flex items-center gap-2"><XCircle className="w-4 h-4" /> What To Avoid</h4>
-                    <ul className="space-y-3">
-                      {whatToAvoid.map((item: string, i: number) => (
-                        <li key={i} className="text-sm text-zinc-300 flex items-start gap-2 capitalize">
-                          <span className="w-1.5 h-1.5 rounded-full bg-red-500/50 mt-1.5 shrink-0" /> {item}
-                        </li>
-                      ))}
-                    </ul>
+                {/* Occasion Harmonics */}
+                <div className="border border-[#C8C8C8] p-8 bg-white space-y-4">
+                  <span className="editorial-subheading text-[#151413] block">
+                    Recommended Occasions
+                  </span>
+                  <div className="flex flex-wrap gap-2">
+                    {occasions.map((occ, i) => (
+                      <span
+                        key={i}
+                        className="px-3 py-1.5 bg-[#F7F7F6] border border-[#DFDFDF] text-xs uppercase tracking-wider text-[#151413]"
+                      >
+                        {occ}
+                      </span>
+                    ))}
                   </div>
                 </div>
               </div>
 
-              {/* Grid for Colors & Styling */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                
-                {/* Color Intelligence */}
-                <div className="bg-zinc-900/30 border border-white/5 p-8 rounded-3xl h-full">
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="p-2 bg-white/5 rounded-lg border border-white/5"><Palette className="w-5 h-5 text-zinc-300" /></div>
-                    <h3 className="text-sm font-bold uppercase tracking-[0.2em] text-zinc-300">Color Harmony</h3>
-                  </div>
-                  <div className="space-y-6">
-                    <div>
-                      <h4 className="text-xs text-zinc-500 uppercase tracking-widest mb-3 font-bold">Recommended Tones</h4>
-                      <div className="flex flex-wrap gap-2">
-                        {recommendedColors.map((color: string, i: number) => (
-                          <span key={i} className="px-3 py-1.5 bg-white/5 border border-white/10 text-zinc-300 text-xs rounded-lg capitalize">{color}</span>
-                        ))}
-                      </div>
-                    </div>
-                    <div>
-                      <h4 className="text-xs text-zinc-500 uppercase tracking-widest mb-3 font-bold">Tones to Avoid</h4>
-                      <div className="flex flex-wrap gap-2">
-                        {avoidColors.map((color: string, i: number) => (
-                          <span key={i} className="px-3 py-1.5 bg-red-500/10 border border-red-500/10 text-red-300/80 text-xs rounded-lg capitalize">{color}</span>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
+              {/* Right Column (7/12): Silhouette, Color Harmony, Styling Suggestions */}
+              <div className="lg:col-span-7 space-y-8">
+                {/* Silhouette & Proportion Card */}
+                <StyleInsightCard
+                  bodyCompatibility={analysis.bodyCompatibility}
+                  whatWorks={whatWorks}
+                  whatToAvoid={whatToAvoid}
+                  fitRecommendations={analysis.fitRecommendations}
+                />
+
+                {/* Color Harmony Grid */}
+                <ColorPalette
+                  recommended={recommendedColors}
+                  avoid={avoidColors}
+                />
 
                 {/* Styling Strategy */}
-                <div className="bg-zinc-900/30 border border-white/5 p-8 rounded-3xl h-full">
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="p-2 bg-white/5 rounded-lg border border-white/5"><Layers className="w-5 h-5 text-zinc-300" /></div>
-                    <h3 className="text-sm font-bold uppercase tracking-[0.2em] text-zinc-300">Styling Strategy</h3>
+                <div className="border border-[#C8C8C8] p-8 bg-white space-y-6">
+                  <div className="flex items-center gap-2 border-b border-[#DFDFDF] pb-4">
+                    <Layers className="w-4 h-4 text-[#0E0E0E]" />
+                    <span className="editorial-subheading text-[#151413]">
+                      Styling Strategy & Complements
+                    </span>
                   </div>
-                  <div className="space-y-4">
-                    <div className="pb-3 border-b border-white/5">
-                      <span className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold block mb-1">Accessories</span>
-                      <span className="text-sm text-zinc-300">{analysis.stylingSuggestions?.accessories || 'N/A'}</span>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div className="p-4 bg-[#F7F7F6] border border-[#DFDFDF]">
+                      <span className="text-[10px] uppercase tracking-widest text-[#66625C] font-semibold block mb-1">
+                        Accessories
+                      </span>
+                      <p className="text-xs text-[#151413] font-light leading-relaxed">
+                        {styling.accessories || 'Minimal geometric jewelry or refined leather belts.'}
+                      </p>
                     </div>
-                    <div className="pb-3 border-b border-white/5">
-                      <span className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold block mb-1">Footwear</span>
-                      <span className="text-sm text-zinc-300">{analysis.stylingSuggestions?.shoes || 'N/A'}</span>
+
+                    <div className="p-4 bg-[#F7F7F6] border border-[#DFDFDF]">
+                      <span className="text-[10px] uppercase tracking-widest text-[#66625C] font-semibold block mb-1">
+                        Footwear
+                      </span>
+                      <p className="text-xs text-[#151413] font-light leading-relaxed">
+                        {styling.shoes || 'Structured leather loafers or clean, low-profile minimalist footwear.'}
+                      </p>
                     </div>
-                    <div className="pb-3 border-b border-white/5">
-                      <span className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold block mb-1">Layering</span>
-                      <span className="text-sm text-zinc-300">{analysis.stylingSuggestions?.layering || 'N/A'}</span>
+
+                    <div className="p-4 bg-[#F7F7F6] border border-[#DFDFDF]">
+                      <span className="text-[10px] uppercase tracking-widest text-[#66625C] font-semibold block mb-1">
+                        Layering
+                      </span>
+                      <p className="text-xs text-[#151413] font-light leading-relaxed">
+                        {styling.layering || 'Unstructured wool overshirt or light tailored blazer.'}
+                      </p>
                     </div>
-                    <div className="pt-1">
-                      <span className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold block mb-2">Ideal Occasions</span>
-                      <div className="flex flex-wrap gap-2">
-                        {(analysis.occasionMatch || []).map((occ: string, i: number) => (
-                          <span key={i} className="px-2.5 py-1 bg-white/5 border border-white/5 text-zinc-400 text-[10px] uppercase tracking-wider rounded-md">{occ}</span>
-                        ))}
-                      </div>
+
+                    <div className="p-4 bg-[#F7F7F6] border border-[#DFDFDF]">
+                      <span className="text-[10px] uppercase tracking-widest text-[#66625C] font-semibold block mb-1">
+                        Timepiece
+                      </span>
+                      <p className="text-xs text-[#151413] font-light leading-relaxed">
+                        {styling.watch || 'Understated dress watch with slim leather strap.'}
+                      </p>
                     </div>
                   </div>
                 </div>
 
               </div>
 
-            </motion.div>
-          </div>
-        </section>
+            </div>
+          </section>
 
-      </div>
-    </main>
+          {/* BOTTOM ACTIONS BAR */}
+          <div className="border border-[#C8C8C8] p-8 bg-[#FBFBFA] flex flex-col sm:flex-row items-center justify-between gap-6">
+            <div>
+              <h3 className="text-base font-medium text-[#151413] uppercase tracking-wider mb-1">
+                Explore Curated Recommendations
+              </h3>
+              <p className="text-xs text-[#66625C] font-light">
+                Discover alternative silhouettes, colorways, and aesthetic enhancements tuned to this analysis.
+              </p>
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+              <Link
+                href="/recommendations"
+                className="w-full sm:w-auto px-8 py-4 bg-[#0E0E0E] text-white text-xs uppercase tracking-widest font-medium hover:bg-[#2A2927] transition-colors flex items-center justify-center gap-2 text-center"
+              >
+                <span>View Recommendations</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+              <Link
+                href="/upload"
+                className="w-full sm:w-auto px-8 py-4 border border-[#C8C8C8] text-[#151413] text-xs uppercase tracking-widest font-medium hover:border-[#151413] transition-colors text-center"
+              >
+                Analyze Another Outfit
+              </Link>
+            </div>
+          </div>
+
+        </div>
+      </main>
+
+      <SiteFooter />
+    </div>
   );
 }
